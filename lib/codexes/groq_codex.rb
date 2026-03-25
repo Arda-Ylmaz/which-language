@@ -12,12 +12,11 @@ require 'openssl'
 # Metadata and detailed descriptions are handled via config/codexes.yml.
 class GroqCodex < BaseCodex
   # Groq API endpoint for chat completions
-  API_URL = 'https://api.groq.com/openai/v1/chat/completions'
-
   def initialize(config = {})
-    super('groq', config) # Shared configs (mappings, extensions, etc.) are handled by BaseCodex
+    super('groq', config) # Shared configs are handled by BaseCodex
     @api_key = config[:api_key] || ENV['GROQ_API_KEY']
-    
+    @api_url = config[:api_url]
+
     # Model name and cooldown configuration fetched from config/codexes.yml
     @model_name = config[:model] || config[:model_name]
     @cooldown_seconds = config[:cooldown_seconds] || 1.5
@@ -28,6 +27,7 @@ class GroqCodex < BaseCodex
 
     # Ensure essential configuration is present before proceeding
     raise CodexError, 'GROQ_API_KEY not configured' unless @api_key
+    raise CodexError, 'API URL not configured for Groq' unless @api_url
     raise CodexError, 'Model name not configured for Groq' unless @model_name
   end
 
@@ -100,14 +100,13 @@ class GroqCodex < BaseCodex
 
   # Executes the HTTP POST request to the Groq backend
   def call_groq_api(prompt)
-    uri = URI.parse(API_URL)
+    uri = URI.parse(@api_url) # Use the instance variable instead of a constant
     
-    # Enforces strict output format via system instruction
     system_instruction = <<~TEXT
       You are a senior software engineer. 
       Respond ONLY with the source code. 
       Do not include any conversational text, explanations, or notes.
-      Always wrap your code in triple backticks with the correct language identifier (e.g., ```c, ```ocaml, ```scheme).
+      Always wrap your code in triple backticks with the correct language identifier.
     TEXT
 
     request_body = {
@@ -116,7 +115,7 @@ class GroqCodex < BaseCodex
         { role: 'system', content: system_instruction },
         { role: 'user', content: prompt }
       ],
-      temperature: 0.1, # Minimize randomness for deterministic code generation
+      temperature: 0.1,
       max_tokens: 4096 
     }
 
