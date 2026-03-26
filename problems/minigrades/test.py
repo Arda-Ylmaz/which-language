@@ -1,6 +1,6 @@
 """
 SPECS test scenarios
-Project: mini-grades
+Project: mini-grades (v1)
 """
 
 import subprocess
@@ -61,6 +61,12 @@ def test_add_grade_student_not_found():
     response = run_cmd(["add-grade", "999", "80"])
     assert response == "Error: No student found with ID 999."
 
+def test_add_grade_out_of_range():
+    """Tests that the added grade must be between 0 and 100."""
+    run_cmd(["add", "101", "Berke"])
+    response = run_cmd(["add-grade", "101", "101"])
+    assert response == "Invalid grade: Grades must be between 0 and 100."
+
 # --- delete student tests ---
 def test_delete_student_success():
     """Tests the deletion of an existing student via their ID."""
@@ -73,17 +79,65 @@ def test_delete_student_not_found():
     response = run_cmd(["delete", "999"])
     assert response == "Error: No student found with ID 999."
 
+# --- delete grade tests ---
+def test_delete_grade_success():
+    """Tests the deletion of an existing grade for student via their ID."""
+    run_cmd(["add", "101", "Berke"])
+    run_cmd(["add-grade", "101", "85"])
+    response = run_cmd(["del-grade", "101", "85"])
+    assert response == "Grade 85 successfully removed!"
+
+def test_delete_grade_non_numeric_id():
+    """Tests that the added grade must consist of numbers."""
+    run_cmd(["add", "101", "Berke"])
+    run_cmd(["add-grade", "101", "85"])
+    response = run_cmd(["del-grade", "abc", "85"])
+    assert response == "Invalid input: Please enter a numeric value."
+
+def test_delete_grade_non_numeric_grade():
+    """Tests that the added grade must consist of numbers."""
+    run_cmd(["add", "101", "Berke"])
+    run_cmd(["add-grade", "101", "85"])
+    response = run_cmd(["del-grade", "101", "abc"])
+    assert response == "Invalid input: Please enter a numeric value."
+
+def test_delete_grade_out_of_range():
+    """Tests that the added grade must be between 0 and 100."""
+    run_cmd(["add", "101", "Berke"])
+    run_cmd(["add-grade", "101", "85"])
+    response = run_cmd(["del-grade", "101", "101"])
+    assert response == "Invalid grade: Grades must be between 0 and 100."
+
+def test_delete_grade_student_not_found():
+    """Tests the error when trying to delete a grade from a student ID that does not exist."""
+    response = run_cmd(["del-grade", "999", "85"])
+    assert response == "Error: No student found with ID 999."
+
+def test_delete_grade_not_found():
+    """Tests the error when trying to delete a grade that does not exist."""
+    run_cmd(["add", "101", "Berke"])
+    run_cmd(["add-grade", "101", "85"])
+    response = run_cmd(["del-grade", "101", "90"])
+    assert response == "Error: Grade 90 not found for this student."
+
 # --- calculate average tests ---
 def test_calculate_average_success():
     """Tests the (simulation message) for a registered student's average calculation."""
     run_cmd(["add", "101", "Berke"])
-    response = run_cmd(["average", "101"])
-    assert response == "Average calculation will be implemented in future weeks."
+    run_cmd(["add-grade", "101", "85"])
+    response = run_cmd(["calc-avg", "101"])
+    assert response == "Average for student 101 is 85.00."
 
 def test_calculate_average_student_not_found():
     """Tests the error when querying the average of a non-registered student."""
-    response = run_cmd(["average", "999"])
+    response = run_cmd(["calc-avg", "999"])
     assert response == "Error: No student found with ID 999."
+
+def test_could_not_calculate_average():
+    """Tests the error when querying the average of a non-registered student."""
+    run_cmd(["add", "101", "Berke"])
+    response = run_cmd(["calc-avg", "101"])
+    assert response == "Error: Could not calculate average for student 101."
 
 # --- list students tests ---
 def test_list_students_success():
@@ -91,8 +145,47 @@ def test_list_students_success():
     run_cmd(["add", "101", "Berke"])
     run_cmd(["add", "102", "Efe"])
     response = run_cmd(["list"])
-    assert "101 | Berke" in response
-    assert "102 | Efe" in response
+    assert "=== LIST OF STUDENTS ===" in response
+    assert " " in response
+    assert "Student 1" in response
+    assert "---------------" in response
+    assert "ID: 101" in response
+    assert "Name: Berke" in response
+    assert "Grades: None" in response
+    assert "Error: Could not calculate average for student 101." in response
+    assert "---------------" in response
+    assert " " in response
+    assert "Student 2" in response
+    assert "---------------" in response
+    assert "ID: 102" in response
+    assert "Name: Efe" in response
+    assert "Grades: None" in response
+    assert "Error: Could not calculate average for student 102." in response
+    assert "---------------" in response
+
+def test_list_students_with_grades_success():
+    """Tests the listing of all registered students according to the format (ID | Name | Grades)."""
+    run_cmd(["add", "101", "Berke"])
+    run_cmd(["add-grade", "101", "85"])
+    run_cmd(["add", "102", "Eren"])
+    run_cmd(["add-grade", "102", "90"])
+    response = run_cmd(["list"])
+    assert "=== LIST OF STUDENTS ===" in response
+    assert " " in response
+    assert "Student 1" in response
+    assert "---------------" in response
+    assert "ID: 101" in response
+    assert "Name: Berke" in response
+    assert "Grades: 85" in response
+    assert "Average for student 101 is 85.00." in response
+    assert "---------------" in response
+    assert " " in response
+    assert "Student 2" in response
+    assert "ID: 102" in response
+    assert "Name: Eren" in response
+    assert "Grades: 90" in response
+    assert "Average for student 102 is 90.00." in response
+    assert "---------------" in response
 
 def test_list_students_empty():
     """Tests the error when listing is requested while no students are registered."""
