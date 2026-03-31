@@ -1,0 +1,145 @@
+MiniBudget Specification
+Version: 2.0
+Command name: minibudget
+External libraries: NOT allowed
+Standard library: Allowed
+Persistent storage: Local filesystem only
+
+========================================
+1. Overview
+========================================
+
+MiniBudget is a minimal command-line tool to track
+income and expenses.
+
+The executable must be called:
+
+    minibudget
+
+All data must be stored in:
+
+    .minibudget/
+
+All commands operate relative to current directory.
+
+----------------------------------------
+
+Supported commands:
+
+    minibudget init
+    minibudget add <desc> <amount> <category>
+    minibudget list
+    minibudget summary
+    minibudget delete <desc>
+
+========================================
+2. Data Storage
+========================================
+
+After init:
+
+    .minibudget/
+        budget.dat
+
+budget.dat:
+    One transaction per line.
+    Format: <desc>|<amount>|<category>
+
+    Example:
+    Yemek|100|Gida
+    Kira|5000|Ev
+
+========================================
+3. Command Specifications
+========================================
+
+----------------------------------------
+3.1 init
+----------------------------------------
+
+Create .minibudget/ directory and empty budget.dat file.
+
+If already exists:
+    print "Already initialized."
+Exit 0.
+
+----------------------------------------
+3.2 add <desc> <amount> <category>
+----------------------------------------
+
+If not initialized:
+    print "Error: Run 'init' first."
+    exit 1
+
+Append transaction to budget.dat.
+
+Print:
+    Added: <desc>
+
+----------------------------------------
+3.3 list
+----------------------------------------
+
+If not initialized:
+    print "Error: Run 'init' first."
+    exit 1
+
+If no transactions:
+    print "No transactions found."
+    exit 0
+
+Print header then all transactions:
+    --- ALL TRANSACTIONS ---
+    - <desc>|<amount>|<category>
+    --- End ---
+
+----------------------------------------
+3.4 summary
+----------------------------------------
+
+If not initialized:
+    print "Error: Run 'init' first."
+    exit 1
+
+Count total number of transactions in budget.dat.
+
+Print:
+    Total transactions: <count>
+
+----------------------------------------
+3.5 delete <desc>
+----------------------------------------
+
+If not initialized:
+    print "Error: Run 'init' first."
+    exit 1
+
+If <desc> not found:
+    print "Error: Record not found."
+    exit 1
+
+Remove the first matching transaction line.
+
+Print:
+    Deleted: <desc>
+
+========================================
+4. Error Handling
+========================================
+
+- Unknown command:
+    print "Unknown command: <command>"
+    exit 1
+
+========================================
+5. Determinism Rules
+========================================
+
+- No extra spaces in output
+- No debug output
+- Exact string matching required
+- Exit 0 on success, exit 1 on error
+
+========================================
+END
+========================================
