@@ -5,6 +5,19 @@
 
 ---
 
+## 2026-04-20 — V2 Evolution: Gemini Caching, MiniGit Status & Spec Hardening
+
+**Contributor**: AI agent (Antigravity)
+**What was done**: 
+- **SPEC Improvement**: Updated `AGENT.md` with new sections for "Artifact Management" and "Metric Accuracy" to ensure consistent benchmark reporting.
+- **Codex Fix**: Upgraded `GeminiCodex` adapter to support `cachedTokenCount`. This enables accurate tracking of Google's context caching, reducing calculated costs for long-running benchmarks.
+- **Problem Fix**: Added `status` command to `minigit` problem. Updated `SPEC-v1.txt` and `test-v1.sh` with the new command and 2 additional test cases.
+- **V2 Transition**: Updated `README.md` to reflect the move to V2 and documented the completed tasks.
+**Observations**: The Gemini adapter was previously over-reporting costs by ignoring cached tokens. The `minigit` problem was missing a basic command to check the staged state, which is now resolved.
+**Next**: Finalize more V2 tasks in `plan.md`.
+
+---
+
 ## 2026-04-14 — Process First-Time Contributor PR & Update PR Guidelines
 
 **Contributor**: AI agent (Antigravity)
